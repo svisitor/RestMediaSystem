@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link, useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Play, Download } from 'lucide-react';
-import GuestLayout from '@/components/layout/guest-layout';
+import AppLayout from '@/components/layout/app-layout';
 import MediaCard from '@/components/media-card';
 import HorizontalMediaList from '@/components/horizontal-media-list';
 import AdvertisementCarousel from '@/components/advertisements/advertisement-carousel';
@@ -38,7 +38,7 @@ export default function GuestHome() {
   });
 
   return (
-    <GuestLayout>
+    <AppLayout>
       {/* Hero Section with Advertisement Carousel */}
       <div className="relative h-[80vh] overflow-hidden">
         <div className="absolute inset-0 z-10">
@@ -108,6 +108,6 @@ export default function GuestHome() {
           className="mb-10 telegram-slide-up"
         />
       </div>
-    </GuestLayout>
+    </AppLayout>
   );
 }

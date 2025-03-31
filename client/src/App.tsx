@@ -7,7 +7,6 @@ import { useAuth } from "@/lib/auth";
 import { ReactNode, useEffect } from "react";
 
 // Guest pages
-import Login from "./pages/login";
 import GuestHome from "./pages/guest/home";
 import Movies from "./pages/guest/movies";
 import Series from "./pages/guest/series";
@@ -18,6 +17,7 @@ import MediaDetail from "./pages/guest/media-detail";
 // Admin pages
 import Dashboard from "./pages/admin/dashboard";
 import Content from "./pages/admin/content";
+import Categories from "./pages/admin/categories";
 import AdminLiveStreams from "./pages/admin/live-streams";
 import AdminVoting from "./pages/admin/voting";
 import Advertisements from "./pages/admin/advertisements";
@@ -49,9 +49,6 @@ function AdminRoute({ component: Component, ...rest }: AdminRouteProps) {
 function AppRoutes() {
   return (
     <Switch>
-      {/* Auth */}
-      <Route path="/login" component={Login} />
-      
       {/* Guest Interface */}
       <Route path="/" component={GuestHome} />
       <Route path="/movies" component={Movies} />
@@ -66,6 +63,9 @@ function AppRoutes() {
       </Route>
       <Route path="/admin/content">
         {(params) => <AdminRoute component={Content} {...params} />}
+      </Route>
+      <Route path="/admin/categories">
+        {(params) => <AdminRoute component={Categories} {...params} />}
       </Route>
       <Route path="/admin/live-streams">
         {(params) => <AdminRoute component={AdminLiveStreams} {...params} />}

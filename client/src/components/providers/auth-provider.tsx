@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       await apiRequest('POST', '/api/auth/logout', {});
       setUser(null);
-      navigate('/login');
+      navigate('/'); // Navigate to home instead of login
     } catch (error) {
       console.error('Logout failed:', error);
     }

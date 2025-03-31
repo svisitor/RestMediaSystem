@@ -3,7 +3,7 @@ import { Link } from 'wouter';
 import { Edit, Trash, Edit3, Clock, Film, Users, Tag, AlertCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import AdminLayout from '@/components/layout/admin-layout';
+import AppLayout from '@/components/layout/app-layout';
 import i18n from '@/lib/i18n';
 import { AdminStats, MediaWithDetails, VoteSuggestionWithDetails, LiveStreamWithTimeRemaining } from '@/lib/types';
 
@@ -25,7 +25,7 @@ export default function Dashboard() {
   });
 
   return (
-    <AdminLayout>
+    <AppLayout showLiveStreamBanner={false}>
       <div className="mb-6">
         <h2 className="text-2xl font-bold mb-4">{i18n.t('overview')}</h2>
         
@@ -291,6 +291,6 @@ export default function Dashboard() {
           </div>
         </CardContent>
       </Card>
-    </AdminLayout>
+    </AppLayout>
   );
 }
