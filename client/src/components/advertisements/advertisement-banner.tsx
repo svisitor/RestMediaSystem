@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { Advertisement } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
+import { Advertisement } from "@/lib/types";
 import { 
   Card, 
   CardContent 

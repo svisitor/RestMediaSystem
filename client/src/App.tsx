@@ -1,8 +1,10 @@
-import { Switch, Route, Router } from "wouter";
+import { Switch, Route, Router, useLocation } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { queryClient } from "./lib/queryClient";
 import { AuthProvider } from "@/components/providers/auth-provider";
+import { useAuth } from "@/lib/auth";
+import { ReactNode, useEffect } from "react";
 
 // Guest pages
 import Login from "./pages/login";
@@ -25,6 +27,25 @@ import Settings from "./pages/admin/settings";
 // Not found
 import NotFound from "@/pages/not-found";
 
+// Protected route component for admin routes
+interface AdminRouteProps {
+  component: React.ComponentType<any>;
+  path?: string;
+}
+
+function AdminRoute({ component: Component, ...rest }: AdminRouteProps) {
+  const { isAdmin } = useAuth();
+  const [, navigate] = useLocation();
+  
+  useEffect(() => {
+    if (!isAdmin) {
+      navigate('/', { replace: true });
+    }
+  }, [isAdmin, navigate]);
+  
+  return isAdmin ? <Component {...rest} /> : null;
+}
+
 function AppRoutes() {
   return (
     <Switch>
@@ -40,13 +61,27 @@ function AppRoutes() {
       <Route path="/media/:id" component={MediaDetail} />
 
       {/* Admin Interface */}
-      <Route path="/admin" component={Dashboard} />
-      <Route path="/admin/content" component={Content} />
-      <Route path="/admin/live-streams" component={AdminLiveStreams} />
-      <Route path="/admin/voting" component={AdminVoting} />
-      <Route path="/admin/advertisements" component={Advertisements} />
-      <Route path="/admin/users" component={Users} />
-      <Route path="/admin/settings" component={Settings} />
+      <Route path="/admin">
+        {(params) => <AdminRoute component={Dashboard} {...params} />}
+      </Route>
+      <Route path="/admin/content">
+        {(params) => <AdminRoute component={Content} {...params} />}
+      </Route>
+      <Route path="/admin/live-streams">
+        {(params) => <AdminRoute component={AdminLiveStreams} {...params} />}
+      </Route>
+      <Route path="/admin/voting">
+        {(params) => <AdminRoute component={AdminVoting} {...params} />}
+      </Route>
+      <Route path="/admin/advertisements">
+        {(params) => <AdminRoute component={Advertisements} {...params} />}
+      </Route>
+      <Route path="/admin/users">
+        {(params) => <AdminRoute component={Users} {...params} />}
+      </Route>
+      <Route path="/admin/settings">
+        {(params) => <AdminRoute component={Settings} {...params} />}
+      </Route>
 
       {/* Fallback to 404 */}
       <Route component={NotFound} />

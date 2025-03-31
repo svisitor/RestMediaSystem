@@ -1,6 +1,20 @@
 // Additional client-side types that extend the schema types
 
-import { Media, SeriesSeason, SeriesEpisode, Category, VoteSuggestion } from "@shared/schema";
+import { Media, SeriesSeason, SeriesEpisode, Category, VoteSuggestion, Advertisement as SchemaAdvertisement } from "@shared/schema";
+
+// We redefine Advertisement instead of extending to avoid TypeScript errors
+export interface Advertisement {
+  id: number;
+  title: string;
+  description: string | null;
+  imageUrl: string;
+  linkUrl: string | null;
+  startDate: Date;
+  endDate: Date | null;
+  isActive: boolean;
+  priority: number;
+  createdAt: Date;
+}
 
 export interface MediaWithDetails extends Media {
   category?: Category;

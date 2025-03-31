@@ -1,6 +1,7 @@
-import { pgTable, text, serial, integer, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, boolean, primaryKey } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { relations } from "drizzle-orm";
 
 // Users table
 export const users = pgTable("users", {
@@ -168,3 +169,62 @@ export const insertAdvertisementSchema = createInsertSchema(advertisements).omit
 
 export type Advertisement = typeof advertisements.$inferSelect;
 export type InsertAdvertisement = z.infer<typeof insertAdvertisementSchema>;
+
+// Define table relations
+export const usersRelations = relations(users, ({ many }) => ({
+  voteSuggestions: many(voteSuggestions),
+  voteRecords: many(voteRecords)
+}));
+
+export const categoriesRelations = relations(categories, ({ many }) => ({
+  media: many(media),
+  voteSuggestions: many(voteSuggestions)
+}));
+
+export const mediaRelations = relations(media, ({ one, many }) => ({
+  category: one(categories, {
+    fields: [media.categoryId],
+    references: [categories.id]
+  }),
+  seasons: many(seriesSeasons)
+}));
+
+export const seriesSeasonsRelations = relations(seriesSeasons, ({ one, many }) => ({
+  media: one(media, {
+    fields: [seriesSeasons.mediaId],
+    references: [media.id]
+  }),
+  episodes: many(seriesEpisodes)
+}));
+
+export const seriesEpisodesRelations = relations(seriesEpisodes, ({ one }) => ({
+  season: one(seriesSeasons, {
+    fields: [seriesEpisodes.seasonId],
+    references: [seriesSeasons.id]
+  })
+}));
+
+export const voteSuggestionsRelations = relations(voteSuggestions, ({ one, many }) => ({
+  category: one(categories, {
+    fields: [voteSuggestions.categoryId],
+    references: [categories.id]
+  }),
+  user: one(users, {
+    fields: [voteSuggestions.userId],
+    references: [users.id]
+  }),
+  votes: many(voteRecords)
+}));
+
+export const voteRecordsRelations = relations(voteRecords, ({ one }) => ({
+  suggestion: one(voteSuggestions, {
+    fields: [voteRecords.suggestionId],
+    references: [voteSuggestions.id]
+  }),
+  user: one(users, {
+    fields: [voteRecords.userId],
+    references: [users.id]
+  })
+}));
+
+export const advertisementsRelations = relations(advertisements, ({}) => ({}));
