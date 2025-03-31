@@ -47,8 +47,8 @@ export default function GuestLayout({ children, showLiveStreamBanner = true }: G
   
   const handleAdminLogin = async () => {
     if (adminPassword === '123456') { // Hard-coded admin password as requested
-      // We'll use the current user's username with the admin password
-      const success = await login(user?.username || 'admin', adminPassword);
+      // Use 'suhail' as the admin username with the password '123456'
+      const success = await login('suhail', adminPassword);
       if (success) {
         setAdminDialogOpen(false);
         navigate('/admin'); // Redirect to admin dashboard
