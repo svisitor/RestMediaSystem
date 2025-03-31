@@ -93,7 +93,16 @@ const translations = {
     "loading": "جاري التحميل...",
     "notFound": "لم يتم العثور على الصفحة",
     "backToHome": "العودة للرئيسية",
-    "addedAgo": "أضيف منذ"
+    "addedAgo": "أضيف منذ",
+    
+    // Data States
+    "loadingContent": "جاري تحميل المحتوى...",
+    "errorLoadingContent": "حدث خطأ أثناء تحميل المحتوى",
+    "noContentAvailable": "لا يوجد محتوى متاح",
+    "loadingFeaturedContent": "جاري تحميل المحتوى المميز...",
+    "errorLoadingFeaturedContent": "حدث خطأ أثناء تحميل المحتوى المميز",
+    "noFeaturedContentAvailable": "لا يوجد محتوى مميز متاح",
+    "featuredContent": "المحتوى المميز"
   }
 };
 

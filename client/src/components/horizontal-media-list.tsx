@@ -4,11 +4,14 @@ import { Button } from '@/components/ui/button';
 import MediaCard from '@/components/media-card';
 import { MediaWithDetails } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { DataStateWrapper } from '@/components/ui/data-states';
+import i18n from '@/lib/i18n';
 
 interface HorizontalMediaListProps {
   title: string;
   media: MediaWithDetails[] | undefined;
   isLoading: boolean;
+  isError?: boolean;
   className?: string;
   onViewAll?: () => void;
 }
@@ -17,6 +20,7 @@ export default function HorizontalMediaList({
   title,
   media,
   isLoading,
+  isError = false,
   className,
   onViewAll
 }: HorizontalMediaListProps) {
@@ -101,18 +105,28 @@ export default function HorizontalMediaList({
           className="flex overflow-x-auto overflow-y-hidden scrollbar-hide pb-6 -mx-4 px-4 space-x-4 space-x-reverse"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          {isLoading ? (
-            // Loading skeleton
-            Array(8).fill(0).map((_, i) => (
-              <div key={i} className="min-w-[240px] animate-pulse bg-surface rounded-lg h-64 flex-shrink-0"></div>
-            ))
-          ) : (
-            media?.map(item => (
-              <div key={item.id} className="min-w-[240px] flex-shrink-0">
-                <MediaCard media={item} />
-              </div>
-            ))
-          )}
+          <DataStateWrapper
+            isLoading={isLoading}
+            isError={isError}
+            isEmpty={!media || media.length === 0}
+            loadingMessage={i18n.t('loadingContent')}
+            errorMessage={i18n.t('errorLoadingContent')}
+            emptyMessage={i18n.t('noContentAvailable')}
+            className="flex"
+          >
+            {isLoading ? (
+              // Loading skeleton
+              Array(8).fill(0).map((_, i) => (
+                <div key={i} className="min-w-[240px] animate-pulse bg-surface rounded-lg h-64 flex-shrink-0"></div>
+              ))
+            ) : (
+              media?.map(item => (
+                <div key={item.id} className="min-w-[240px] flex-shrink-0">
+                  <MediaCard media={item} />
+                </div>
+              ))
+            )}
+          </DataStateWrapper>
         </div>
       </div>
     </div>
