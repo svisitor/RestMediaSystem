@@ -235,7 +235,7 @@ export default function GuestLayout({ children, showLiveStreamBanner = true }: G
                 setAdminPassword(e.target.value);
                 setAdminLoginError(false);
               }}
-              className={`${adminLoginError ? 'border-red-500' : ''}`}
+              className={`text-black ${adminLoginError ? 'border-red-500' : ''}`}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   handleAdminLogin();

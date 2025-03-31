@@ -80,7 +80,7 @@ export default function Login() {
                     <FormLabel>{i18n.t('username')}</FormLabel>
                     <FormControl>
                       <Input 
-                        className="bg-surface border-gray-700" 
+                        className="bg-surface border-gray-700 text-white placeholder:text-gray-400" 
                         placeholder={i18n.t('username')} 
                         {...field} 
                       />
@@ -98,7 +98,7 @@ export default function Login() {
                     <FormLabel>{i18n.t('password')}</FormLabel>
                     <FormControl>
                       <Input 
-                        className="bg-surface border-gray-700" 
+                        className="bg-surface border-gray-700 text-white placeholder:text-gray-400" 
                         type="password" 
                         placeholder={i18n.t('password')} 
                         {...field} 

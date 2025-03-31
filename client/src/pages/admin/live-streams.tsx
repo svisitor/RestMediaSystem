@@ -353,7 +353,7 @@ function AddEditLiveStreamForm({ stream, onSuccess }: AddEditLiveStreamFormProps
           name="title"
           value={formData.title}
           onChange={handleChange}
-          className="bg-gray-800 border-gray-700"
+          className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400"
           required
         />
       </div>
@@ -365,7 +365,7 @@ function AddEditLiveStreamForm({ stream, onSuccess }: AddEditLiveStreamFormProps
           name="description"
           value={formData.description}
           onChange={handleChange}
-          className="bg-gray-800 border-gray-700 h-20"
+          className="bg-gray-800 border-gray-700 h-20 text-white placeholder:text-gray-400"
           required
         />
       </div>
@@ -378,7 +378,7 @@ function AddEditLiveStreamForm({ stream, onSuccess }: AddEditLiveStreamFormProps
             name="category"
             value={formData.category}
             onChange={handleChange}
-            className="bg-gray-800 border-gray-700"
+            className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400"
             required
           />
         </div>
@@ -390,7 +390,7 @@ function AddEditLiveStreamForm({ stream, onSuccess }: AddEditLiveStreamFormProps
             name="streamUrl"
             value={formData.streamUrl}
             onChange={handleChange}
-            className="bg-gray-800 border-gray-700"
+            className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400"
             required
           />
         </div>
@@ -408,7 +408,7 @@ function AddEditLiveStreamForm({ stream, onSuccess }: AddEditLiveStreamFormProps
             type="datetime-local"
             value={formData.startTime}
             onChange={handleChange}
-            className="bg-gray-800 border-gray-700"
+            className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400"
             required
           />
         </div>
@@ -424,7 +424,7 @@ function AddEditLiveStreamForm({ stream, onSuccess }: AddEditLiveStreamFormProps
             type="datetime-local"
             value={formData.endTime}
             onChange={handleChange}
-            className="bg-gray-800 border-gray-700"
+            className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400"
             required
           />
         </div>

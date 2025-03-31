@@ -95,7 +95,7 @@ export default function Users() {
               <Input
                 type="text"
                 placeholder={i18n.t('search')}
-                className="pr-10 bg-surface border-gray-700"
+                className="pr-10 bg-surface border-gray-700 text-white placeholder:text-gray-400"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -342,7 +342,7 @@ function AddEditUserForm({ user, onSuccess }: AddEditUserFormProps) {
           name="username"
           value={formData.username}
           onChange={handleChange}
-          className="bg-gray-800 border-gray-700"
+          className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400"
           disabled={isEditing} // Username cannot be changed when editing
           required
         />
@@ -355,7 +355,7 @@ function AddEditUserForm({ user, onSuccess }: AddEditUserFormProps) {
           name="displayName"
           value={formData.displayName}
           onChange={handleChange}
-          className="bg-gray-800 border-gray-700"
+          className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400"
           required
         />
       </div>
@@ -370,7 +370,7 @@ function AddEditUserForm({ user, onSuccess }: AddEditUserFormProps) {
           type="password"
           value={formData.password}
           onChange={handleChange}
-          className="bg-gray-800 border-gray-700"
+          className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400"
           required={!isEditing} // Required only for new users
         />
       </div>
@@ -381,10 +381,10 @@ function AddEditUserForm({ user, onSuccess }: AddEditUserFormProps) {
           value={formData.role}
           onValueChange={handleSelectChange}
         >
-          <SelectTrigger className="bg-gray-800 border-gray-700">
+          <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
             <SelectValue placeholder="اختر الدور" />
           </SelectTrigger>
-          <SelectContent className="bg-gray-800 border-gray-700">
+          <SelectContent className="bg-gray-800 border-gray-700 text-white">
             <SelectItem value="guest">ضيف</SelectItem>
             <SelectItem value="admin">مسؤول</SelectItem>
           </SelectContent>

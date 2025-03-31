@@ -48,6 +48,14 @@
 }
 
 @layer components {
+  /* Input color fix for dark backgrounds */
+  .bg-gray-800 input,
+  .bg-gray-800 textarea,
+  .bg-surface input,
+  .bg-surface textarea {
+    @apply text-white placeholder:text-gray-400;
+  }
+  
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }

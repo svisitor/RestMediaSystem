@@ -113,7 +113,7 @@ export default function Content() {
               <Input
                 type="text"
                 placeholder={i18n.t('search')}
-                className="pr-10 bg-surface border-gray-700"
+                className="pr-10 bg-surface border-gray-700 text-white placeholder:text-gray-400"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -444,7 +444,7 @@ function AddEditMediaForm({ media, onSuccess, categories }: AddEditMediaFormProp
             name="title"
             value={formData.title}
             onChange={handleChange}
-            className="bg-gray-800 border-gray-700"
+            className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400"
             required
           />
         </div>
@@ -457,7 +457,7 @@ function AddEditMediaForm({ media, onSuccess, categories }: AddEditMediaFormProp
             type="number"
             value={formData.year}
             onChange={handleChange}
-            className="bg-gray-800 border-gray-700"
+            className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400"
             required
           />
         </div>
@@ -470,10 +470,10 @@ function AddEditMediaForm({ media, onSuccess, categories }: AddEditMediaFormProp
             value={formData.type}
             onValueChange={(value) => handleSelectChange('type', value)}
           >
-            <SelectTrigger className="bg-gray-800 border-gray-700">
+            <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
               <SelectValue placeholder="اختر النوع" />
             </SelectTrigger>
-            <SelectContent className="bg-gray-800 border-gray-700">
+            <SelectContent className="bg-gray-800 border-gray-700 text-white">
               <SelectItem value="movie">فيلم</SelectItem>
               <SelectItem value="series">مسلسل</SelectItem>
             </SelectContent>
@@ -486,10 +486,10 @@ function AddEditMediaForm({ media, onSuccess, categories }: AddEditMediaFormProp
             value={formData.categoryId.toString()}
             onValueChange={(value) => handleSelectChange('categoryId', value)}
           >
-            <SelectTrigger className="bg-gray-800 border-gray-700">
+            <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
               <SelectValue placeholder="اختر التصنيف" />
             </SelectTrigger>
-            <SelectContent className="bg-gray-800 border-gray-700">
+            <SelectContent className="bg-gray-800 border-gray-700 text-white">
               {categories.map((category) => (
                 <SelectItem key={category.id} value={category.id.toString()}>
                   {category.name}
@@ -507,7 +507,7 @@ function AddEditMediaForm({ media, onSuccess, categories }: AddEditMediaFormProp
           name="description"
           value={formData.description}
           onChange={handleChange}
-          className="bg-gray-800 border-gray-700 h-20"
+          className="bg-gray-800 border-gray-700 h-20 text-white placeholder:text-gray-400"
           required
         />
       </div>
@@ -520,7 +520,7 @@ function AddEditMediaForm({ media, onSuccess, categories }: AddEditMediaFormProp
             name="thumbnailUrl"
             value={formData.thumbnailUrl}
             onChange={handleChange}
-            className="bg-gray-800 border-gray-700"
+            className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400"
             required
           />
         </div>
@@ -532,7 +532,7 @@ function AddEditMediaForm({ media, onSuccess, categories }: AddEditMediaFormProp
             name="filePath"
             value={formData.filePath}
             onChange={handleChange}
-            className="bg-gray-800 border-gray-700"
+            className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400"
             required
           />
         </div>
@@ -565,7 +565,7 @@ function AddEditMediaForm({ media, onSuccess, categories }: AddEditMediaFormProp
             name="badgeText"
             value={formData.badgeText}
             onChange={handleChange}
-            className="bg-gray-800 border-gray-700"
+            className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400"
             placeholder="مثال: جديد، حصري، الأكثر مشاهدة"
           />
           <div className="text-xs text-gray-400">
