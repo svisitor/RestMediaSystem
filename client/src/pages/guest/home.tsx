@@ -1,24 +1,27 @@
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'wouter';
+import { Link, useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Play, Download } from 'lucide-react';
 import GuestLayout from '@/components/layout/guest-layout';
 import MediaCard from '@/components/media-card';
+import HorizontalMediaList from '@/components/horizontal-media-list';
 import AdvertisementCarousel from '@/components/advertisements/advertisement-carousel';
 import i18n from '@/lib/i18n';
 import { MediaWithDetails } from '@/lib/types';
 
 export default function GuestHome() {
+  const [, navigate] = useLocation();
+  
   const { data: featuredMedia } = useQuery<MediaWithDetails>({
     queryKey: ['/api/media/featured'],
   });
 
   const { data: latestMovies, isLoading: loadingMovies } = useQuery<MediaWithDetails[]>({
-    queryKey: ['/api/media', { type: 'movie', limit: 5 }],
+    queryKey: ['/api/media', { type: 'movie', limit: 10 }],
   });
 
   const { data: latestSeries, isLoading: loadingSeries } = useQuery<MediaWithDetails[]>({
-    queryKey: ['/api/media', { type: 'series', limit: 5 }],
+    queryKey: ['/api/media', { type: 'series', limit: 10 }],
   });
 
   return (
@@ -61,80 +64,23 @@ export default function GuestHome() {
           <h2 className="text-2xl font-bold mb-6">{i18n.t('featuredContent')}</h2>
         </div>
         
-        {/* Movies Section */}
-        <div className="mb-10">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold">{i18n.t('latestMovies')}</h2>
-            <div className="flex space-x-2 space-x-reverse">
-              <Link to="/movies">
-                <Button variant="outline" size="sm" className="bg-surface px-3 py-1 rounded text-sm hover:bg-surface-light transition">
-                  {i18n.t('all')}
-                </Button>
-              </Link>
-              <Button variant="outline" size="sm" className="bg-surface px-3 py-1 rounded text-sm hover:bg-surface-light transition">
-                {i18n.t('action')}
-              </Button>
-              <Button variant="outline" size="sm" className="bg-surface px-3 py-1 rounded text-sm hover:bg-surface-light transition">
-                {i18n.t('drama')}
-              </Button>
-              <Button variant="outline" size="sm" className="bg-surface px-3 py-1 rounded text-sm hover:bg-surface-light transition">
-                {i18n.t('comedy')}
-              </Button>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {loadingMovies ? (
-              // Loading skeleton
-              Array(5).fill(0).map((_, i) => (
-                <div key={i} className="animate-pulse bg-surface rounded-lg h-64"></div>
-              ))
-            ) : (
-              latestMovies?.map(movie => (
-                <MediaCard
-                  key={movie.id}
-                  media={movie}
-                />
-              ))
-            )}
-          </div>
-        </div>
+        {/* Movies Section - Horizontal Scrolling */}
+        <HorizontalMediaList 
+          title={i18n.t('latestMovies')} 
+          media={latestMovies} 
+          isLoading={loadingMovies}
+          onViewAll={() => navigate('/movies')}
+          className="mb-10 telegram-slide-up"
+        />
 
-        {/* TV Series Section */}
-        <div className="mb-10">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold">{i18n.t('series')}</h2>
-            <div className="flex space-x-2 space-x-reverse">
-              <Link to="/series">
-                <Button variant="outline" size="sm" className="bg-surface px-3 py-1 rounded text-sm hover:bg-surface-light transition">
-                  {i18n.t('all')}
-                </Button>
-              </Link>
-              <Button variant="outline" size="sm" className="bg-surface px-3 py-1 rounded text-sm hover:bg-surface-light transition">
-                {i18n.t('drama')}
-              </Button>
-              <Button variant="outline" size="sm" className="bg-surface px-3 py-1 rounded text-sm hover:bg-surface-light transition">
-                {i18n.t('comedy')}
-              </Button>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {loadingSeries ? (
-              // Loading skeleton
-              Array(5).fill(0).map((_, i) => (
-                <div key={i} className="animate-pulse bg-surface rounded-lg h-64"></div>
-              ))
-            ) : (
-              latestSeries?.map(series => (
-                <MediaCard
-                  key={series.id}
-                  media={series}
-                />
-              ))
-            )}
-          </div>
-        </div>
+        {/* TV Series Section - Horizontal Scrolling */}
+        <HorizontalMediaList 
+          title={i18n.t('series')} 
+          media={latestSeries} 
+          isLoading={loadingSeries}
+          onViewAll={() => navigate('/series')}
+          className="mb-10 telegram-slide-up"
+        />
       </div>
     </GuestLayout>
   );

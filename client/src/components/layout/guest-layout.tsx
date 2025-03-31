@@ -37,13 +37,26 @@ export default function GuestLayout({ children, showLiveStreamBanner = true }: G
   const [adminPassword, setAdminPassword] = useState('');
   const [adminLoginError, setAdminLoginError] = useState(false);
   
-  const navLinks = [
+  // Generate navigation links based on user role
+  const baseNavLinks = [
     { name: i18n.t('home'), href: '/' },
     { name: i18n.t('movies'), href: '/movies' },
     { name: i18n.t('series'), href: '/series' },
     { name: i18n.t('voting'), href: '/voting' },
     { name: i18n.t('liveStream'), href: '/live-stream' },
   ];
+
+  // Admin links to show if user is admin
+  const adminNavLinks = isAdmin ? [
+    { name: i18n.t('adminDashboard'), href: '/admin' },
+    { name: i18n.t('content'), href: '/admin/content' },
+    { name: i18n.t('liveStreams'), href: '/admin/live-streams' },
+    { name: i18n.t('advertisements'), href: '/admin/advertisements' },
+    { name: i18n.t('users'), href: '/admin/users' },
+    { name: i18n.t('settings'), href: '/admin/settings' },
+  ] : [];
+
+  const navLinks = [...baseNavLinks, ...(isAdmin ? adminNavLinks : [])];
   
   const handleAdminLogin = async () => {
     if (adminPassword === '123456') { // Hard-coded admin password as requested
