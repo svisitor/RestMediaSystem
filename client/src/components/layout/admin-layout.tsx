@@ -2,9 +2,24 @@ import { ReactNode, useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Bell, Home, Film, Video, ThumbsUp, Users, Settings, Menu, X } from 'lucide-react';
+import { 
+  Bell, 
+  Home, 
+  Film, 
+  Video, 
+  ThumbsUp, 
+  Users, 
+  Settings, 
+  Menu, 
+  X, 
+  LayoutDashboard, 
+  MessageSquare,
+  Clock,
+  LogOut
+} from 'lucide-react';
 import i18n from '@/lib/i18n';
 import { useAuth } from '@/lib/auth';
+import { Separator } from '@/components/ui/separator';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -16,12 +31,44 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navLinks = [
-    { name: i18n.t('dashboard'), href: '/admin', icon: <Home className="h-5 w-5 ml-3" /> },
-    { name: i18n.t('content'), href: '/admin/content', icon: <Film className="h-5 w-5 ml-3" /> },
-    { name: i18n.t('liveStream'), href: '/admin/live-streams', icon: <Video className="h-5 w-5 ml-3" /> },
-    { name: i18n.t('voting'), href: '/admin/voting', icon: <ThumbsUp className="h-5 w-5 ml-3" /> },
-    { name: i18n.t('users'), href: '/admin/users', icon: <Users className="h-5 w-5 ml-3" /> },
-    { name: i18n.t('settings'), href: '/admin/settings', icon: <Settings className="h-5 w-5 ml-3" /> },
+    { 
+      category: i18n.t('dashboard'),
+      items: [
+        { name: i18n.t('adminDashboard'), href: '/admin', icon: <LayoutDashboard className="h-5 w-5 ml-3" /> },
+      ] 
+    },
+    { 
+      category: i18n.t('content'),
+      items: [
+        { name: i18n.t('contentManagement'), href: '/admin/content', icon: <Film className="h-5 w-5 ml-3" /> },
+        { name: i18n.t('advertisements'), href: '/admin/advertisements', icon: <MessageSquare className="h-5 w-5 ml-3" /> },
+      ] 
+    },
+    { 
+      category: i18n.t('liveStream'),
+      items: [
+        { name: i18n.t('liveStreams'), href: '/admin/live-streams', icon: <Video className="h-5 w-5 ml-3" /> },
+        { name: i18n.t('broadcastManagement'), href: '/admin/broadcasts', icon: <Clock className="h-5 w-5 ml-3" /> },
+      ] 
+    },
+    { 
+      category: i18n.t('voting'),
+      items: [
+        { name: i18n.t('votingManagement'), href: '/admin/voting', icon: <ThumbsUp className="h-5 w-5 ml-3" /> },
+      ] 
+    },
+    { 
+      category: i18n.t('users'),
+      items: [
+        { name: i18n.t('userManagement'), href: '/admin/users', icon: <Users className="h-5 w-5 ml-3" /> },
+      ] 
+    },
+    { 
+      category: i18n.t('settings'),
+      items: [
+        { name: i18n.t('systemSettings'), href: '/admin/settings', icon: <Settings className="h-5 w-5 ml-3" /> },
+      ] 
+    },
   ];
 
   const toggleSidebar = () => {
@@ -38,21 +85,46 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </div>
         
         <div className="p-2">
-          <nav className="space-y-1">
-            {navLinks.map((link) => (
-              <Link key={link.href} to={link.href}>
-                <a
-                  className={`flex items-center px-4 py-2 ${
-                    location === link.href
-                      ? 'text-white bg-surface rounded-md'
-                      : 'text-gray-300 hover:bg-surface hover:text-white rounded-md transition'
-                  }`}
-                >
-                  {link.icon}
-                  {link.name}
-                </a>
-              </Link>
+          <nav className="space-y-4">
+            {navLinks.map((group, groupIndex) => (
+              <div key={groupIndex} className="space-y-2">
+                <div className="text-xs text-gray-400 uppercase px-4 pt-2">{group.category}</div>
+                {group.items.map((item) => (
+                  <Link 
+                    key={item.href} 
+                    to={item.href} 
+                    className={`flex items-center px-4 py-2 text-sm ${
+                      location === item.href
+                        ? 'text-white bg-surface rounded-md font-medium'
+                        : 'text-gray-300 hover:bg-surface hover:text-white rounded-md transition'
+                    }`}
+                  >
+                    {item.icon}
+                    <span className="mr-2">{item.name}</span>
+                  </Link>
+                ))}
+                {groupIndex < navLinks.length - 1 && (
+                  <Separator className="my-2 bg-gray-700" />
+                )}
+              </div>
             ))}
+            
+            <div className="pt-6">
+              <Button 
+                variant="outline" 
+                className="w-full flex items-center justify-start text-gray-300 hover:text-white border-gray-700"
+                onClick={async () => {
+                  try {
+                    await logout();
+                  } catch (error) {
+                    console.error('Logout error:', error);
+                  }
+                }}
+              >
+                <LogOut className="h-5 w-5 ml-3" />
+                <span className="mr-2">{i18n.t('logout')}</span>
+              </Button>
+            </div>
           </nav>
         </div>
       </div>

@@ -73,6 +73,13 @@ const translations = {
     "otherSuggestions": "اقتراحات أخرى",
     "broadcastManagement": "إدارة البث المباشر",
     "addNewBroadcast": "إضافة بث جديد",
+    "adminDashboard": "لوحة التحكم الرئيسية",
+    "contentManagement": "إدارة المحتوى",
+    "advertisements": "الإعلانات والعروض",
+    "liveStreams": "البث المباشر",
+    "votingManagement": "إدارة التصويت",
+    "userManagement": "إدارة المستخدمين",
+    "systemSettings": "إعدادات النظام",
     "title": "العنوان",
     "date": "التاريخ",
     "time": "الوقت",
@@ -94,6 +101,7 @@ const translations = {
     "notFound": "لم يتم العثور على الصفحة",
     "backToHome": "العودة للرئيسية",
     "addedAgo": "أضيف منذ",
+    "logout": "تسجيل الخروج",
     
     // Data States
     "loadingContent": "جاري تحميل المحتوى...",
