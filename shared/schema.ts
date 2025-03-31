@@ -39,6 +39,8 @@ export const media = pgTable("media", {
   thumbnailUrl: text("thumbnail_url").notNull(),
   filePath: text("file_path").notNull(),
   year: integer("year").notNull(),
+  isPopular: boolean("is_popular").default(false),
+  badgeText: text("badge_text"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
