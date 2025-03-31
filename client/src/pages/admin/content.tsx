@@ -164,6 +164,7 @@ export default function Content() {
                     <TableHead className="text-white">العنوان</TableHead>
                     <TableHead className="text-white">التصنيف</TableHead>
                     <TableHead className="text-white">السنة</TableHead>
+                    <TableHead className="text-white">الشارة</TableHead>
                     <TableHead className="text-white">تاريخ الإضافة</TableHead>
                     <TableHead className="text-white w-[100px]">الإجراءات</TableHead>
                   </TableRow>
@@ -171,7 +172,7 @@ export default function Content() {
                 <TableBody>
                   {isLoadingMovies ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center py-10">
+                      <TableCell colSpan={6} className="text-center py-10">
                         <div className="flex justify-center">
                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-secondary"></div>
                         </div>
@@ -190,6 +191,14 @@ export default function Content() {
                         </TableCell>
                         <TableCell>{movie.category?.name || '-'}</TableCell>
                         <TableCell>{movie.year}</TableCell>
+                        <TableCell>
+                          {movie.isPopular && !movie.badgeText && (
+                            <span className="px-2 py-1 bg-secondary text-white text-xs rounded">خاص</span>
+                          )}
+                          {movie.badgeText && (
+                            <span className="px-2 py-1 bg-secondary text-white text-xs rounded">{movie.badgeText}</span>
+                          )}
+                        </TableCell>
                         <TableCell>
                           {new Date(movie.createdAt).toLocaleDateString('ar-SA')}
                         </TableCell>
@@ -217,7 +226,7 @@ export default function Content() {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center py-10 text-gray-400">
+                      <TableCell colSpan={6} className="text-center py-10 text-gray-400">
                         لا توجد أفلام متاحة
                       </TableCell>
                     </TableRow>
@@ -236,6 +245,7 @@ export default function Content() {
                     <TableHead className="text-white">التصنيف</TableHead>
                     <TableHead className="text-white">المواسم</TableHead>
                     <TableHead className="text-white">السنة</TableHead>
+                    <TableHead className="text-white">الشارة</TableHead>
                     <TableHead className="text-white">تاريخ الإضافة</TableHead>
                     <TableHead className="text-white w-[100px]">الإجراءات</TableHead>
                   </TableRow>
@@ -243,7 +253,7 @@ export default function Content() {
                 <TableBody>
                   {isLoadingSeries ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-10">
+                      <TableCell colSpan={7} className="text-center py-10">
                         <div className="flex justify-center">
                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-secondary"></div>
                         </div>
@@ -263,6 +273,14 @@ export default function Content() {
                         <TableCell>{seriesItem.category?.name || '-'}</TableCell>
                         <TableCell>{seriesItem.seasons?.length || 0}</TableCell>
                         <TableCell>{seriesItem.year}</TableCell>
+                        <TableCell>
+                          {seriesItem.isPopular && !seriesItem.badgeText && (
+                            <span className="px-2 py-1 bg-secondary text-white text-xs rounded">خاص</span>
+                          )}
+                          {seriesItem.badgeText && (
+                            <span className="px-2 py-1 bg-secondary text-white text-xs rounded">{seriesItem.badgeText}</span>
+                          )}
+                        </TableCell>
                         <TableCell>
                           {new Date(seriesItem.createdAt).toLocaleDateString('ar-SA')}
                         </TableCell>
@@ -290,7 +308,7 @@ export default function Content() {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-10 text-gray-400">
+                      <TableCell colSpan={7} className="text-center py-10 text-gray-400">
                         لا توجد مسلسلات متاحة
                       </TableCell>
                     </TableRow>
@@ -366,6 +384,8 @@ function AddEditMediaForm({ media, onSuccess, categories }: AddEditMediaFormProp
     thumbnailUrl: media?.thumbnailUrl || '',
     filePath: media?.filePath || '',
     year: media?.year || new Date().getFullYear(),
+    isPopular: media?.isPopular || false,
+    badgeText: media?.badgeText || '',
   });
 
   const { toast } = useToast();
@@ -515,6 +535,42 @@ function AddEditMediaForm({ media, onSuccess, categories }: AddEditMediaFormProp
             className="bg-gray-800 border-gray-700"
             required
           />
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <div className="flex items-center space-x-2 space-x-reverse">
+            <input
+              type="checkbox"
+              id="isPopular"
+              name="isPopular"
+              className="h-4 w-4 rounded border-gray-500 text-secondary focus:ring-secondary"
+              checked={formData.isPopular}
+              onChange={(e) => 
+                setFormData(prev => ({ ...prev, isPopular: e.target.checked }))
+              }
+            />
+            <label htmlFor="isPopular" className="text-sm font-medium text-gray-200">محتوى خاص</label>
+          </div>
+          <div className="text-xs text-gray-400">
+            تمييز هذا المحتوى كمحتوى خاص سيعرضه في قائمة "المحتوى الخاص"
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label htmlFor="badgeText" className="text-sm font-medium text-gray-200">نص الشارة (اختياري)</label>
+          <Input
+            id="badgeText"
+            name="badgeText"
+            value={formData.badgeText}
+            onChange={handleChange}
+            className="bg-gray-800 border-gray-700"
+            placeholder="مثال: جديد، حصري، الأكثر مشاهدة"
+          />
+          <div className="text-xs text-gray-400">
+            اترك هذا الحقل فارغًا إذا كنت لا تريد عرض شارة
+          </div>
         </div>
       </div>
 
