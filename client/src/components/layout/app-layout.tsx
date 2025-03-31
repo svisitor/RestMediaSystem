@@ -63,9 +63,27 @@ export default function AppLayout({ children, showLiveStreamBanner = true }: App
       }
     };
 
+    // Add a semi-transparent overlay when sidebar is open on mobile
+    if (sidebarOpen && window.innerWidth < 768) {
+      const overlay = document.createElement('div');
+      overlay.id = 'sidebar-overlay';
+      overlay.className = 'fixed inset-0 bg-black bg-opacity-50 z-30';
+      overlay.addEventListener('click', () => setSidebarOpen(false));
+      document.body.appendChild(overlay);
+    } else {
+      const existingOverlay = document.getElementById('sidebar-overlay');
+      if (existingOverlay) {
+        document.body.removeChild(existingOverlay);
+      }
+    }
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      const existingOverlay = document.getElementById('sidebar-overlay');
+      if (existingOverlay) {
+        document.body.removeChild(existingOverlay);
+      }
     };
   }, [sidebarOpen]);
 
@@ -156,8 +174,8 @@ export default function AppLayout({ children, showLiveStreamBanner = true }: App
       {/* Sidebar */}
       <div 
         ref={sidebarRef}
-        className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} 
-          fixed md:relative z-40 w-64 h-screen bg-primary text-white transition-transform duration-300 ease-in-out`}
+        className={`${sidebarOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'} 
+          fixed md:relative z-40 w-64 h-screen bg-primary text-white transition-transform duration-300 ease-in-out right-0`}
       >
         <div className="p-4 border-b border-gray-700 flex items-center justify-between">
           <div>

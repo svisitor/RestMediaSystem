@@ -68,7 +68,7 @@ export default function AdvertisementsPage() {
       description: "",
       imageUrl: "",
       linkUrl: "",
-      startDate: new Date().toISOString().split('T')[0],
+      startDate: new Date().toISOString().substring(0, 10),
       isActive: true,
       priority: 5
     }
@@ -183,8 +183,8 @@ export default function AdvertisementsPage() {
       description: ad.description || "",
       imageUrl: ad.imageUrl,
       linkUrl: ad.linkUrl,
-      startDate: new Date(ad.startDate).toISOString().split('T')[0],
-      endDate: ad.endDate ? new Date(ad.endDate).toISOString().split('T')[0] : undefined,
+      startDate: new Date(ad.startDate).toISOString().substring(0, 10),
+      endDate: ad.endDate ? new Date(ad.endDate).toISOString().substring(0, 10) : undefined,
       isActive: ad.isActive,
       priority: ad.priority
     });

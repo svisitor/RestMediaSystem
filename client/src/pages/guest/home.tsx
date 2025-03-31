@@ -40,7 +40,7 @@ export default function GuestHome() {
   return (
     <AppLayout>
       {/* Hero Section with Advertisement Carousel */}
-      <div className="relative h-[80vh] overflow-hidden">
+      <div className="relative h-[70vh] overflow-hidden rounded-lg mb-6">
         <div className="absolute inset-0 z-10">
           <AdvertisementCarousel 
             className="h-full" 
@@ -49,7 +49,9 @@ export default function GuestHome() {
             interval={8000}
           />
         </div>
-        <div className="absolute inset-0 z-20 bg-gradient-to-t from-background via-transparent to-background opacity-80"></div>
+        <div className="absolute inset-0 z-20 bg-gradient-to-b from-background/30 via-transparent to-background/80"></div>
+        
+        {/* Featured Content - Show only if there's no ads */}
         <div className="absolute bottom-0 right-0 p-6 md:p-10 w-full max-w-3xl z-30 telegram-slide-up">
           <DataStateWrapper
             isLoading={loadingFeatured}

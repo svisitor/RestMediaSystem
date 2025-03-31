@@ -272,7 +272,7 @@ function AddEditLiveStreamForm({ stream, onSuccess }: AddEditLiveStreamFormProps
     // Convert to YYYY-MM-DDThh:mm format for datetime-local input
     return new Date(date.getTime() - (date.getTimezoneOffset() * 60000))
       .toISOString()
-      .slice(0, 16);
+      .substring(0, 16);
   };
   
   const [formData, setFormData] = useState({
