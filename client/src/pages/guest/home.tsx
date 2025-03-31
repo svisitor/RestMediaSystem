@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Play, Download } from 'lucide-react';
 import GuestLayout from '@/components/layout/guest-layout';
 import MediaCard from '@/components/media-card';
+import AdvertisementCarousel from '@/components/advertisements/advertisement-carousel';
 import i18n from '@/lib/i18n';
 import { MediaWithDetails } from '@/lib/types';
 
@@ -58,6 +59,11 @@ export default function GuestHome() {
 
       {/* Content Sections */}
       <div className="px-4 md:px-8 py-8">
+        {/* Advertisement Section */}
+        <div className="mb-8">
+          <AdvertisementCarousel showControls={true} />
+        </div>
+        
         {/* Movies Section */}
         <div className="mb-10">
           <div className="flex justify-between items-center mb-4">

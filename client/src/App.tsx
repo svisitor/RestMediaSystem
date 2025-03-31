@@ -18,6 +18,7 @@ import Dashboard from "./pages/admin/dashboard";
 import Content from "./pages/admin/content";
 import AdminLiveStreams from "./pages/admin/live-streams";
 import AdminVoting from "./pages/admin/voting";
+import Advertisements from "./pages/admin/advertisements";
 import Users from "./pages/admin/users";
 import Settings from "./pages/admin/settings";
 
@@ -43,6 +44,7 @@ function AppRoutes() {
       <Route path="/admin/content" component={Content} />
       <Route path="/admin/live-streams" component={AdminLiveStreams} />
       <Route path="/admin/voting" component={AdminVoting} />
+      <Route path="/admin/advertisements" component={Advertisements} />
       <Route path="/admin/users" component={Users} />
       <Route path="/admin/settings" component={Settings} />
 

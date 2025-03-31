@@ -6,8 +6,11 @@ import {
   seriesEpisodes, SeriesEpisode, InsertSeriesEpisode,
   voteSuggestions, VoteSuggestion, InsertVoteSuggestion,
   voteRecords, VoteRecord, InsertVoteRecord,
-  liveStreams, LiveStream, InsertLiveStream
+  liveStreams, LiveStream, InsertLiveStream,
+  advertisements, Advertisement, InsertAdvertisement
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, and, or, gt, gte, lt, lte, isNull, desc, count, ilike, sql } from "drizzle-orm";
 import bcrypt from "bcrypt";
 
 // Extend the storage interface with all required methods based on the routes.ts file
@@ -43,6 +46,14 @@ export interface IStorage {
   // Series-related methods
   createSeriesSeason(season: InsertSeriesSeason): Promise<SeriesSeason>;
   createSeriesEpisode(episode: InsertSeriesEpisode): Promise<SeriesEpisode>;
+
+  // Advertisement-related methods
+  getActiveAdvertisements(): Promise<Advertisement[]>;
+  getAdvertisement(id: number): Promise<Advertisement | undefined>;
+  getAllAdvertisements(): Promise<Advertisement[]>;
+  createAdvertisement(ad: InsertAdvertisement): Promise<Advertisement>;
+  updateAdvertisement(id: number, adData: Partial<InsertAdvertisement>): Promise<Advertisement | undefined>;
+  deleteAdvertisement(id: number): Promise<void>;
 
   // Voting-related methods
   getVoteSuggestions(): Promise<(VoteSuggestion & { 
@@ -98,6 +109,7 @@ export class MemStorage implements IStorage {
   private voteSuggestions: Map<number, VoteSuggestion>;
   private voteRecords: Map<number, VoteRecord>;
   private liveStreams: Map<number, LiveStream>;
+  private advertisements: Map<number, Advertisement>;
   
   // Settings storage
   private generalSettings: any;
@@ -114,6 +126,9 @@ export class MemStorage implements IStorage {
   private voteRecordId: number;
   private liveStreamId: number;
 
+  // ID counter for advertisements
+  private advertisementId: number;
+
   constructor() {
     // Initialize storage maps
     this.users = new Map();
@@ -124,6 +139,7 @@ export class MemStorage implements IStorage {
     this.voteSuggestions = new Map();
     this.voteRecords = new Map();
     this.liveStreams = new Map();
+    this.advertisements = new Map();
 
     // Initialize ID counters
     this.userId = 1;
@@ -134,6 +150,7 @@ export class MemStorage implements IStorage {
     this.suggestionId = 1;
     this.voteRecordId = 1;
     this.liveStreamId = 1;
+    this.advertisementId = 1;
 
     // Initialize settings
     this.generalSettings = {
@@ -317,6 +334,47 @@ export class MemStorage implements IStorage {
     await this.voteForSuggestion(1, suggestion1.id);
     await this.voteForSuggestion(2, suggestion1.id);
     await this.voteForSuggestion(1, suggestion2.id);
+
+    // Create sample advertisements
+    const currentDate = new Date();
+    const oneWeekFromNow = new Date(currentDate);
+    oneWeekFromNow.setDate(currentDate.getDate() + 7);
+
+    const oneMonthFromNow = new Date(currentDate);
+    oneMonthFromNow.setDate(currentDate.getDate() + 30);
+
+    await this.createAdvertisement({
+      title: "عرض خاص - الوجبات",
+      description: "خصم 20% على جميع الوجبات هذا الأسبوع!",
+      imageUrl: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&h=400",
+      linkUrl: "/specials/food",
+      startDate: currentDate.toISOString(),
+      endDate: oneWeekFromNow.toISOString(),
+      isActive: true,
+      priority: 10
+    });
+
+    await this.createAdvertisement({
+      title: "عرض جديد - الفيلم الأسبوعي",
+      description: "شاهد أحدث الأفلام على شاشتنا الكبيرة كل يوم جمعة",
+      imageUrl: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=800&h=400",
+      linkUrl: "/events/movies",
+      startDate: currentDate.toISOString(),
+      endDate: oneMonthFromNow.toISOString(),
+      isActive: true,
+      priority: 5
+    });
+
+    await this.createAdvertisement({
+      title: "خدمة واي فاي مجانية",
+      description: "استمتع بخدمة الإنترنت السريعة في جميع أنحاء الاستراحة",
+      imageUrl: "https://images.unsplash.com/photo-1563770557518-8c00bcfc54bb?auto=format&fit=crop&w=800&h=400",
+      linkUrl: "/amenities/wifi",
+      startDate: currentDate.toISOString(),
+      endDate: null,
+      isActive: true,
+      priority: 1
+    });
   }
 
   // User-related methods
@@ -526,6 +584,61 @@ export class MemStorage implements IStorage {
     const episode: SeriesEpisode = { ...episodeData, id };
     this.seriesEpisodes.set(id, episode);
     return episode;
+  }
+
+  // Advertisement-related methods
+  async getActiveAdvertisements(): Promise<Advertisement[]> {
+    const now = new Date();
+    const ads = Array.from(this.advertisements.values())
+      .filter(ad => {
+        const startDate = new Date(ad.startDate);
+        const endDate = ad.endDate ? new Date(ad.endDate) : null;
+        return ad.isActive && 
+               startDate <= now && 
+               (!endDate || endDate >= now);
+      });
+    
+    // Sort by priority (higher first) and then by start date (newest first)
+    return ads.sort((a, b) => {
+      if (a.priority !== b.priority) {
+        return b.priority - a.priority;
+      }
+      return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
+    });
+  }
+
+  async getAdvertisement(id: number): Promise<Advertisement | undefined> {
+    return this.advertisements.get(id);
+  }
+
+  async getAllAdvertisements(): Promise<Advertisement[]> {
+    const ads = Array.from(this.advertisements.values());
+    
+    // Sort by created date (newest first)
+    return ads.sort((a, b) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }
+
+  async createAdvertisement(adData: InsertAdvertisement): Promise<Advertisement> {
+    const id = this.advertisementId++;
+    const now = new Date();
+    const ad: Advertisement = { ...adData, id, createdAt: now.toISOString() };
+    this.advertisements.set(id, ad);
+    return ad;
+  }
+
+  async updateAdvertisement(id: number, adData: Partial<InsertAdvertisement>): Promise<Advertisement | undefined> {
+    const ad = this.advertisements.get(id);
+    if (!ad) return undefined;
+    
+    const updatedAd: Advertisement = { ...ad, ...adData };
+    this.advertisements.set(id, updatedAd);
+    return updatedAd;
+  }
+
+  async deleteAdvertisement(id: number): Promise<void> {
+    this.advertisements.delete(id);
   }
 
   // Voting-related methods
@@ -881,4 +994,596 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async createUser(userData: InsertUser): Promise<User> {
+    const [user] = await db.insert(users).values(userData).returning();
+    return user;
+  }
+
+  async updateUser(id: number, userData: Partial<InsertUser>): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set(userData)
+      .where(eq(users.id, id))
+      .returning();
+    return user || undefined;
+  }
+
+  async deleteUser(id: number): Promise<void> {
+    await db.delete(users).where(eq(users.id, id));
+  }
+
+  async getUsers(search?: string): Promise<User[]> {
+    if (search) {
+      const searchLower = search.toLowerCase();
+      return db
+        .select()
+        .from(users)
+        .where(
+          or(
+            ilike(users.displayName, `%${searchLower}%`),
+            ilike(users.username, `%${searchLower}%`)
+          )
+        );
+    }
+    return db.select().from(users);
+  }
+
+  async getCategories(type?: string): Promise<Category[]> {
+    if (type) {
+      return db
+        .select()
+        .from(categories)
+        .where(
+          or(
+            eq(categories.type, type),
+            eq(categories.type, 'both')
+          )
+        );
+    }
+    return db.select().from(categories);
+  }
+
+  async createCategory(categoryData: InsertCategory): Promise<Category> {
+    const [category] = await db.insert(categories).values(categoryData).returning();
+    return category;
+  }
+
+  async getMedia(options: {
+    type?: string;
+    categoryId?: number;
+    search?: string;
+    limit?: number;
+  }): Promise<Media[]> {
+    let query = db.select().from(media);
+    
+    if (options.type) {
+      query = query.where(eq(media.type, options.type));
+    }
+    
+    if (options.categoryId) {
+      query = query.where(eq(media.categoryId, options.categoryId));
+    }
+    
+    if (options.search) {
+      const searchLower = options.search.toLowerCase();
+      query = query.where(
+        or(
+          ilike(media.title, `%${searchLower}%`),
+          ilike(media.description, `%${searchLower}%`)
+        )
+      );
+    }
+    
+    // Sort by creation date, newest first
+    query = query.orderBy(desc(media.createdAt));
+    
+    if (options.limit && options.limit > 0) {
+      query = query.limit(options.limit);
+    }
+    
+    return query;
+  }
+
+  async getMediaById(id: number): Promise<Media & {
+    category?: Category;
+    seasons?: (SeriesSeason & { episodes?: SeriesEpisode[] })[];
+  } | undefined> {
+    const [mediaItem] = await db.select().from(media).where(eq(media.id, id));
+    if (!mediaItem) return undefined;
+    
+    // Get category
+    const [category] = await db
+      .select()
+      .from(categories)
+      .where(eq(categories.id, mediaItem.categoryId));
+    
+    // Get seasons and episodes if it's a series
+    let seasons: (SeriesSeason & { episodes?: SeriesEpisode[] })[] = [];
+    if (mediaItem.type === 'series') {
+      // Get all seasons for this media
+      const seasonsData = await db
+        .select()
+        .from(seriesSeasons)
+        .where(eq(seriesSeasons.mediaId, mediaItem.id))
+        .orderBy(seriesSeasons.seasonNumber);
+      
+      // For each season, get its episodes
+      for (const season of seasonsData) {
+        const episodes = await db
+          .select()
+          .from(seriesEpisodes)
+          .where(eq(seriesEpisodes.seasonId, season.id))
+          .orderBy(seriesEpisodes.episodeNumber);
+        
+        seasons.push({ ...season, episodes });
+      }
+    }
+    
+    return { ...mediaItem, category, seasons };
+  }
+
+  async getFeaturedMedia(): Promise<Media & { category?: Category } | undefined> {
+    // Get the newest media item for featured display
+    const [mediaItem] = await db
+      .select()
+      .from(media)
+      .orderBy(desc(media.createdAt))
+      .limit(1);
+    
+    if (!mediaItem) return undefined;
+    
+    // Get its category
+    const [category] = await db
+      .select()
+      .from(categories)
+      .where(eq(categories.id, mediaItem.categoryId));
+    
+    return { ...mediaItem, category };
+  }
+
+  async createMedia(mediaData: InsertMedia): Promise<Media> {
+    const [newMedia] = await db.insert(media).values(mediaData).returning();
+    return newMedia;
+  }
+
+  async updateMedia(id: number, mediaData: Partial<InsertMedia>): Promise<Media | undefined> {
+    const [updatedMedia] = await db
+      .update(media)
+      .set(mediaData)
+      .where(eq(media.id, id))
+      .returning();
+    return updatedMedia || undefined;
+  }
+
+  async deleteMedia(id: number): Promise<void> {
+    // First get all seasons for this media
+    const seasons = await db
+      .select()
+      .from(seriesSeasons)
+      .where(eq(seriesSeasons.mediaId, id));
+    
+    // Delete episodes for each season
+    for (const season of seasons) {
+      await db
+        .delete(seriesEpisodes)
+        .where(eq(seriesEpisodes.seasonId, season.id));
+    }
+    
+    // Delete all seasons
+    await db
+      .delete(seriesSeasons)
+      .where(eq(seriesSeasons.mediaId, id));
+    
+    // Finally delete the media itself
+    await db.delete(media).where(eq(media.id, id));
+  }
+
+  async createSeriesSeason(seasonData: InsertSeriesSeason): Promise<SeriesSeason> {
+    const [season] = await db
+      .insert(seriesSeasons)
+      .values(seasonData)
+      .returning();
+    return season;
+  }
+
+  async createSeriesEpisode(episodeData: InsertSeriesEpisode): Promise<SeriesEpisode> {
+    const [episode] = await db
+      .insert(seriesEpisodes)
+      .values(episodeData)
+      .returning();
+    return episode;
+  }
+
+  async getActiveAdvertisements(): Promise<Advertisement[]> {
+    const now = new Date();
+    
+    return db
+      .select()
+      .from(advertisements)
+      .where(
+        and(
+          eq(advertisements.isActive, true),
+          lte(advertisements.startDate, now),
+          or(
+            isNull(advertisements.endDate),
+            gte(advertisements.endDate, now)
+          )
+        )
+      )
+      .orderBy(desc(advertisements.priority));
+  }
+
+  async getAdvertisement(id: number): Promise<Advertisement | undefined> {
+    const [ad] = await db
+      .select()
+      .from(advertisements)
+      .where(eq(advertisements.id, id));
+    return ad || undefined;
+  }
+
+  async getAllAdvertisements(): Promise<Advertisement[]> {
+    return db
+      .select()
+      .from(advertisements)
+      .orderBy(desc(advertisements.createdAt));
+  }
+
+  async createAdvertisement(adData: InsertAdvertisement): Promise<Advertisement> {
+    const [ad] = await db
+      .insert(advertisements)
+      .values(adData)
+      .returning();
+    return ad;
+  }
+
+  async updateAdvertisement(id: number, adData: Partial<InsertAdvertisement>): Promise<Advertisement | undefined> {
+    const [ad] = await db
+      .update(advertisements)
+      .set(adData)
+      .where(eq(advertisements.id, id))
+      .returning();
+    return ad || undefined;
+  }
+
+  async deleteAdvertisement(id: number): Promise<void> {
+    await db.delete(advertisements).where(eq(advertisements.id, id));
+  }
+
+  async getVoteSuggestions(): Promise<(VoteSuggestion & {
+    category?: Category;
+    userDisplayName?: string;
+  })[]> {
+    const suggestions = await db
+      .select()
+      .from(voteSuggestions)
+      .where(eq(voteSuggestions.status, 'pending'))
+      .orderBy(desc(voteSuggestions.votes));
+    
+    // Enhance with category and user info
+    return await this.enhanceVoteSuggestions(suggestions);
+  }
+
+  async getAllVoteSuggestions(): Promise<(VoteSuggestion & {
+    category?: Category;
+    userDisplayName?: string;
+  })[]> {
+    const suggestions = await db
+      .select()
+      .from(voteSuggestions)
+      .orderBy(desc(voteSuggestions.createdAt));
+    
+    // Enhance with category and user info
+    return await this.enhanceVoteSuggestions(suggestions);
+  }
+
+  async getTopVotedSuggestions(limit: number = 5): Promise<(VoteSuggestion & {
+    category?: Category;
+    userDisplayName?: string;
+  })[]> {
+    const suggestions = await db
+      .select()
+      .from(voteSuggestions)
+      .where(eq(voteSuggestions.status, 'pending'))
+      .orderBy(desc(voteSuggestions.votes))
+      .limit(limit);
+    
+    // Enhance with category and user info
+    return await this.enhanceVoteSuggestions(suggestions);
+  }
+
+  private async enhanceVoteSuggestions(suggestions: VoteSuggestion[]): Promise<(VoteSuggestion & {
+    category?: Category;
+    userDisplayName?: string;
+  })[]> {
+    const result: (VoteSuggestion & {
+      category?: Category;
+      userDisplayName?: string;
+    })[] = [];
+    
+    for (const suggestion of suggestions) {
+      // Get category
+      const [category] = await db
+        .select()
+        .from(categories)
+        .where(eq(categories.id, suggestion.categoryId));
+      
+      // Get user name
+      const [user] = await db
+        .select({ displayName: users.displayName })
+        .from(users)
+        .where(eq(users.id, suggestion.userId));
+      
+      result.push({
+        ...suggestion,
+        category,
+        userDisplayName: user?.displayName,
+      });
+    }
+    
+    return result;
+  }
+
+  async createVoteSuggestion(suggestionData: InsertVoteSuggestion): Promise<VoteSuggestion> {
+    const [suggestion] = await db
+      .insert(voteSuggestions)
+      .values({
+        ...suggestionData,
+        votes: 0,
+        status: 'pending',
+      })
+      .returning();
+    return suggestion;
+  }
+
+  async voteForSuggestion(userId: number, suggestionId: number): Promise<void> {
+    const hasVoted = await this.hasUserVotedForSuggestion(userId, suggestionId);
+    if (hasVoted) {
+      throw new Error('User has already voted for this suggestion');
+    }
+    
+    // Transaction to ensure atomicity
+    await db.transaction(async (tx) => {
+      // Increment votes in the suggestion
+      await tx
+        .update(voteSuggestions)
+        .set({ votes: sql`${voteSuggestions.votes} + 1` })
+        .where(eq(voteSuggestions.id, suggestionId));
+      
+      // Record the vote
+      await tx
+        .insert(voteRecords)
+        .values({
+          suggestionId,
+          userId,
+        });
+    });
+  }
+
+  async hasUserVotedForSuggestion(userId: number, suggestionId: number): Promise<boolean> {
+    const [vote] = await db
+      .select()
+      .from(voteRecords)
+      .where(
+        and(
+          eq(voteRecords.userId, userId),
+          eq(voteRecords.suggestionId, suggestionId)
+        )
+      );
+    
+    return !!vote;
+  }
+
+  async getRemainingDailySuggestions(userId: number): Promise<number> {
+    const MAX_DAILY_SUGGESTIONS = 3;
+    
+    // Get today's date at midnight
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Count suggestions made by the user today
+    const [result] = await db
+      .select({ count: count() })
+      .from(voteSuggestions)
+      .where(
+        and(
+          eq(voteSuggestions.userId, userId),
+          gte(voteSuggestions.createdAt, today)
+        )
+      );
+    
+    return Math.max(0, MAX_DAILY_SUGGESTIONS - (result?.count || 0));
+  }
+
+  async approveSuggestion(id: number): Promise<void> {
+    const now = new Date();
+    
+    await db
+      .update(voteSuggestions)
+      .set({
+        status: 'approved',
+        processedAt: now,
+      })
+      .where(eq(voteSuggestions.id, id));
+  }
+
+  async rejectSuggestion(id: number): Promise<void> {
+    const now = new Date();
+    
+    await db
+      .update(voteSuggestions)
+      .set({
+        status: 'rejected',
+        processedAt: now,
+      })
+      .where(eq(voteSuggestions.id, id));
+  }
+
+  async getActiveLiveStream(): Promise<LiveStream & { minutesRemaining?: number } | undefined> {
+    const now = new Date();
+    
+    const [stream] = await db
+      .select()
+      .from(liveStreams)
+      .where(
+        and(
+          eq(liveStreams.isActive, true),
+          lte(liveStreams.startTime, now),
+          gte(liveStreams.endTime, now)
+        )
+      );
+    
+    if (stream) {
+      // Calculate minutes remaining
+      const minutesRemaining = Math.floor(
+        (stream.endTime.getTime() - now.getTime()) / (1000 * 60)
+      );
+      return { ...stream, minutesRemaining };
+    }
+    
+    return undefined;
+  }
+
+  async getUpcomingLiveStreams(limit: number = 5): Promise<(LiveStream & { minutesRemaining?: number })[]> {
+    const now = new Date();
+    
+    const streams = await db
+      .select()
+      .from(liveStreams)
+      .where(gt(liveStreams.startTime, now))
+      .orderBy(liveStreams.startTime)
+      .limit(limit);
+    
+    return streams.map(stream => {
+      // Calculate minutes remaining until start
+      const minutesRemaining = Math.floor(
+        (stream.startTime.getTime() - now.getTime()) / (1000 * 60)
+      );
+      return { ...stream, minutesRemaining };
+    });
+  }
+
+  async getAllLiveStreams(): Promise<LiveStream[]> {
+    return db
+      .select()
+      .from(liveStreams)
+      .orderBy(desc(liveStreams.createdAt));
+  }
+
+  async createLiveStream(streamData: Omit<InsertLiveStream, "createdAt">): Promise<LiveStream> {
+    const [stream] = await db
+      .insert(liveStreams)
+      .values({
+        ...streamData,
+        isActive: false,
+      })
+      .returning();
+    return stream;
+  }
+
+  async updateLiveStream(id: number, streamData: Partial<InsertLiveStream>): Promise<LiveStream | undefined> {
+    const [stream] = await db
+      .update(liveStreams)
+      .set(streamData)
+      .where(eq(liveStreams.id, id))
+      .returning();
+    return stream || undefined;
+  }
+
+  async deleteLiveStream(id: number): Promise<void> {
+    await db.delete(liveStreams).where(eq(liveStreams.id, id));
+  }
+
+  async getAdminStats(): Promise<{
+    totalContent: number;
+    activeUsers: number;
+    todaySuggestions: number;
+    upcomingBroadcasts: number;
+  }> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const now = new Date();
+    
+    // Get content count
+    const [contentResult] = await db
+      .select({ count: count() })
+      .from(media);
+    
+    // Simulate active users (would be from session data in a real app)
+    const activeUsers = 12;
+    
+    // Get today's suggestions count
+    const [suggestionsResult] = await db
+      .select({ count: count() })
+      .from(voteSuggestions)
+      .where(gte(voteSuggestions.createdAt, today));
+    
+    // Get upcoming broadcasts count
+    const [broadcastsResult] = await db
+      .select({ count: count() })
+      .from(liveStreams)
+      .where(gt(liveStreams.startTime, now));
+    
+    return {
+      totalContent: contentResult?.count || 0,
+      activeUsers,
+      todaySuggestions: suggestionsResult?.count || 0,
+      upcomingBroadcasts: broadcastsResult?.count || 0,
+    };
+  }
+
+  async getRecentContent(limit: number = 3): Promise<(Media & { category?: Category })[]> {
+    const mediaItems = await db
+      .select()
+      .from(media)
+      .orderBy(desc(media.createdAt))
+      .limit(limit);
+    
+    const result: (Media & { category?: Category })[] = [];
+    
+    for (const item of mediaItems) {
+      const [category] = await db
+        .select()
+        .from(categories)
+        .where(eq(categories.id, item.categoryId));
+      
+      result.push({ ...item, category });
+    }
+    
+    return result;
+  }
+
+  // Settings methods - these would typically use a settings table in a real app
+  async saveGeneralSettings(settings: any): Promise<void> {
+    // Implementation would depend on how settings are stored
+    console.log('General settings saved', settings);
+  }
+
+  async saveNetworkSettings(settings: any): Promise<void> {
+    // Implementation would depend on how settings are stored
+    console.log('Network settings saved', settings);
+  }
+
+  async saveDatabaseSettings(settings: any): Promise<void> {
+    // Implementation would depend on how settings are stored  
+    console.log('Database settings saved', settings);
+  }
+
+  async createBackup(): Promise<void> {
+    // In a real app, this would create a backup of the database
+    console.log('Database backup created');
+  }
+}
+
+// Use DatabaseStorage instead of MemStorage
+export const storage = new DatabaseStorage();

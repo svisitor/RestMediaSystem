@@ -6,9 +6,13 @@ import session from "express-session";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import createMemoryStore from "memorystore";
-import { CategoryType, InsertUser, insertVoteSuggestionSchema } from "@shared/schema";
+import { 
+  InsertUser, 
+  insertVoteSuggestionSchema,
+  insertMediaSchema,
+  insertAdvertisementSchema
+} from "@shared/schema";
 import { z } from "zod";
-import { insertMediaSchema } from "@shared/schema";
 
 const MemoryStore = createMemoryStore(session);
 
@@ -107,7 +111,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Categories routes
   app.get("/api/categories", async (req, res) => {
     try {
-      const type = req.query.type as CategoryType | undefined;
+      const type = req.query.type as string | undefined;
       const categories = await storage.getCategories(type);
       res.json(categories);
     } catch (error) {
@@ -482,6 +486,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Advertisement routes
+  app.get("/api/advertisements/active", async (req, res) => {
+    try {
+      const activeAds = await storage.getActiveAdvertisements();
+      res.json(activeAds);
+    } catch (error) {
+      console.error("Error fetching active advertisements:", error);
+      res.status(500).json({ message: "Failed to fetch active advertisements" });
+    }
+  });
+
+  app.get("/api/advertisements/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const ad = await storage.getAdvertisement(id);
+      
+      if (!ad) {
+        return res.status(404).json({ message: "Advertisement not found" });
+      }
+      
+      res.json(ad);
+    } catch (error) {
+      console.error("Error fetching advertisement details:", error);
+      res.status(500).json({ message: "Failed to fetch advertisement details" });
+    }
+  });
+
+  // Admin advertisement routes
+  app.get("/api/advertisements", isAdmin, async (req, res) => {
+    try {
+      const allAds = await storage.getAllAdvertisements();
+      res.json(allAds);
+    } catch (error) {
+      console.error("Error fetching all advertisements:", error);
+      res.status(500).json({ message: "Failed to fetch all advertisements" });
+    }
+  });
+
+  app.post("/api/advertisements", isAdmin, async (req, res) => {
+    try {
+      const validatedData = insertAdvertisementSchema.parse(req.body);
+      const newAd = await storage.createAdvertisement(validatedData);
+      res.status(201).json(newAd);
+    } catch (error) {
+      console.error("Error creating advertisement:", error);
+      res.status(400).json({ message: "Invalid advertisement data" });
+    }
+  });
+
+  app.patch("/api/advertisements/:id", isAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertAdvertisementSchema.partial().parse(req.body);
+      const updatedAd = await storage.updateAdvertisement(id, validatedData);
+      
+      if (!updatedAd) {
+        return res.status(404).json({ message: "Advertisement not found" });
+      }
+      
+      res.json(updatedAd);
+    } catch (error) {
+      console.error("Error updating advertisement:", error);
+      res.status(400).json({ message: "Invalid advertisement data" });
+    }
+  });
+
+  app.delete("/api/advertisements/:id", isAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteAdvertisement(id);
+      res.json({ message: "Advertisement deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting advertisement:", error);
+      res.status(500).json({ message: "Failed to delete advertisement" });
+    }
+  });
+  
   // Admin settings routes
   app.post("/api/admin/settings/general", isAdmin, async (req, res) => {
     try {
