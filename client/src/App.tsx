@@ -5,6 +5,7 @@ import { queryClient } from "./lib/queryClient";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { useAuth } from "@/lib/auth";
 import { ReactNode, useEffect } from "react";
+import { AnimationProvider, AnimatedSwitch, AnimatedRoute } from "@/components/providers/animation-provider";
 
 // Guest pages
 import GuestHome from "./pages/guest/home";
@@ -47,47 +48,45 @@ function AdminRoute({ component: Component, ...rest }: AdminRouteProps) {
   return isAdmin ? <Component {...rest} /> : null;
 }
 
+// Animated admin route
+interface AnimatedAdminRouteProps {
+  path: string;
+  component: React.ComponentType<any>;
+}
+
+function AnimatedAdminRoute({ path, component }: AnimatedAdminRouteProps) {
+  return (
+    <Route path={path}>
+      {(params) => <AdminRoute component={component} {...params} />}
+    </Route>
+  );
+}
+
 function AppRoutes() {
   return (
-    <Switch>
+    <AnimatedSwitch>
       {/* Guest Interface */}
-      <Route path="/" component={GuestHome} />
-      <Route path="/movies" component={Movies} />
-      <Route path="/series" component={Series} />
-      <Route path="/voting" component={Voting} />
-      <Route path="/live-stream" component={LiveStream} />
-      <Route path="/media/:id" component={MediaDetail} />
-      <Route path="/video-test" component={VideoPlayerTest} />
+      <AnimatedRoute path="/" component={GuestHome} />
+      <AnimatedRoute path="/movies" component={Movies} />
+      <AnimatedRoute path="/series" component={Series} />
+      <AnimatedRoute path="/voting" component={Voting} />
+      <AnimatedRoute path="/live-stream" component={LiveStream} />
+      <AnimatedRoute path="/media/:id" component={MediaDetail} />
+      <AnimatedRoute path="/video-test" component={VideoPlayerTest} />
 
       {/* Admin Interface */}
-      <Route path="/admin">
-        {(params) => <AdminRoute component={Dashboard} {...params} />}
-      </Route>
-      <Route path="/admin/content">
-        {(params) => <AdminRoute component={Content} {...params} />}
-      </Route>
-      <Route path="/admin/categories">
-        {(params) => <AdminRoute component={Categories} {...params} />}
-      </Route>
-      <Route path="/admin/live-streams">
-        {(params) => <AdminRoute component={AdminLiveStreams} {...params} />}
-      </Route>
-      <Route path="/admin/voting">
-        {(params) => <AdminRoute component={AdminVoting} {...params} />}
-      </Route>
-      <Route path="/admin/advertisements">
-        {(params) => <AdminRoute component={Advertisements} {...params} />}
-      </Route>
-      <Route path="/admin/users">
-        {(params) => <AdminRoute component={Users} {...params} />}
-      </Route>
-      <Route path="/admin/settings">
-        {(params) => <AdminRoute component={Settings} {...params} />}
-      </Route>
+      <AnimatedAdminRoute path="/admin" component={Dashboard} />
+      <AnimatedAdminRoute path="/admin/content" component={Content} />
+      <AnimatedAdminRoute path="/admin/categories" component={Categories} />
+      <AnimatedAdminRoute path="/admin/live-streams" component={AdminLiveStreams} />
+      <AnimatedAdminRoute path="/admin/voting" component={AdminVoting} />
+      <AnimatedAdminRoute path="/admin/advertisements" component={Advertisements} />
+      <AnimatedAdminRoute path="/admin/users" component={Users} />
+      <AnimatedAdminRoute path="/admin/settings" component={Settings} />
 
       {/* Fallback to 404 */}
-      <Route component={NotFound} />
-    </Switch>
+      <AnimatedRoute path="*" component={NotFound} />
+    </AnimatedSwitch>
   );
 }
 
