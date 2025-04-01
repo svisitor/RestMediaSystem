@@ -75,7 +75,7 @@ export default function MediaCard({ media, onPlay, onDownload }: MediaCardProps)
             loading="lazy"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
-              target.src = '/placeholder.png'; // Default placeholder image
+              target.src = '/placeholder.jpg'; // Default placeholder image
               target.onerror = null; // Prevent infinite loop if placeholder also fails
             }}
           />
