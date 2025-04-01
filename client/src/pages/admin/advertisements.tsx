@@ -41,12 +41,10 @@ import { useToast } from "@/hooks/use-toast";
 import { Trash2, PlusCircle, Edit, Eye } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertAdvertisementSchema } from "@shared/schema";
+import { insertAdvertisementSchema, Advertisement } from "@shared/schema";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 import AdminLayout from "@/components/layout/admin-layout";
-
-type FormValues = z.infer<typeof insertAdvertisementSchema>;
 
 export default function AdvertisementsPage() {
   const { toast } = useToast();
@@ -55,14 +53,22 @@ export default function AdvertisementsPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false);
-  const [selectedAd, setSelectedAd] = useState<any>(null);
+  const [selectedAd, setSelectedAd] = useState<Advertisement | null>(null);
 
-  const { data: advertisements, isLoading } = useQuery({
+  const { data: advertisements, isLoading } = useQuery<Advertisement[]>({
     queryKey: ['/api/advertisements'],
   });
 
+  // Extend the schema to handle string dates that will be converted to ISO strings
+  const formSchema = insertAdvertisementSchema.extend({
+    startDate: z.string(),
+    endDate: z.string().optional(),
+  });
+
+  type FormValues = z.infer<typeof formSchema>;
+
   const addForm = useForm<FormValues>({
-    resolver: zodResolver(insertAdvertisementSchema),
+    resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
       description: "",
@@ -75,7 +81,7 @@ export default function AdvertisementsPage() {
   });
   
   const editForm = useForm<FormValues>({
-    resolver: zodResolver(insertAdvertisementSchema),
+    resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
       description: "",
@@ -89,10 +95,13 @@ export default function AdvertisementsPage() {
 
   const addMutation = useMutation({
     mutationFn: async (values: FormValues) => {
-      return apiRequest('/api/advertisements', {
-        method: 'POST',
-        body: JSON.stringify(values),
-      });
+      // Convert string dates to ISO format
+      const data = {
+        ...values,
+        startDate: values.startDate ? new Date(values.startDate).toISOString() : undefined,
+        endDate: values.endDate ? new Date(values.endDate).toISOString() : undefined
+      };
+      return apiRequest('POST', '/api/advertisements', data);
     },
     onSuccess: () => {
       toast({
@@ -117,10 +126,13 @@ export default function AdvertisementsPage() {
   const editMutation = useMutation({
     mutationFn: async (values: FormValues & { id: number }) => {
       const { id, ...rest } = values;
-      return apiRequest(`/api/advertisements/${id}`, {
-        method: 'PATCH',
-        body: JSON.stringify(rest),
-      });
+      // Convert string dates to ISO format
+      const data = {
+        ...rest,
+        startDate: rest.startDate ? new Date(rest.startDate).toISOString() : undefined,
+        endDate: rest.endDate ? new Date(rest.endDate).toISOString() : undefined
+      };
+      return apiRequest('PATCH', `/api/advertisements/${id}`, data);
     },
     onSuccess: () => {
       toast({
@@ -143,9 +155,7 @@ export default function AdvertisementsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest(`/api/advertisements/${id}`, {
-        method: 'DELETE',
-      });
+      return apiRequest('DELETE', `/api/advertisements/${id}`);
     },
     onSuccess: () => {
       toast({
@@ -176,13 +186,13 @@ export default function AdvertisementsPage() {
     editMutation.mutate({ ...data, id: selectedAd.id });
   };
 
-  const handleEditClick = (ad: any) => {
+  const handleEditClick = (ad: Advertisement) => {
     setSelectedAd(ad);
     editForm.reset({
       title: ad.title,
       description: ad.description || "",
       imageUrl: ad.imageUrl,
-      linkUrl: ad.linkUrl,
+      linkUrl: ad.linkUrl || "",
       startDate: new Date(ad.startDate).toISOString().substring(0, 10),
       endDate: ad.endDate ? new Date(ad.endDate).toISOString().substring(0, 10) : undefined,
       isActive: ad.isActive,
@@ -191,12 +201,12 @@ export default function AdvertisementsPage() {
     setIsEditDialogOpen(true);
   };
 
-  const handleDeleteClick = (ad: any) => {
+  const handleDeleteClick = (ad: Advertisement) => {
     setSelectedAd(ad);
     setIsDeleteDialogOpen(true);
   };
 
-  const handlePreviewClick = (ad: any) => {
+  const handlePreviewClick = (ad: Advertisement) => {
     setSelectedAd(ad);
     setIsPreviewDialogOpen(true);
   };
@@ -249,7 +259,7 @@ export default function AdvertisementsPage() {
                 </TableHeader>
                 <TableBody>
                   {advertisements && advertisements.length > 0 ? (
-                    advertisements.map((ad: any) => (
+                    advertisements.map((ad) => (
                       <TableRow key={ad.id}>
                         <TableCell className="font-medium">{ad.title}</TableCell>
                         <TableCell>
@@ -325,7 +335,7 @@ export default function AdvertisementsPage() {
                   <FormItem>
                     <FormLabel>العنوان</FormLabel>
                     <FormControl>
-                      <Input placeholder="عنوان الإعلان" {...field} />
+                      <Input placeholder="عنوان الإعلان" {...field} value={field.value || ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -339,7 +349,7 @@ export default function AdvertisementsPage() {
                   <FormItem>
                     <FormLabel>الوصف</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="وصف الإعلان" {...field} />
+                      <Textarea placeholder="وصف الإعلان" {...field} value={field.value || ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -354,7 +364,7 @@ export default function AdvertisementsPage() {
                     <FormItem>
                       <FormLabel>رابط الصورة</FormLabel>
                       <FormControl>
-                        <Input placeholder="https://example.com/image.jpg" {...field} />
+                        <Input placeholder="https://example.com/image.jpg" {...field} value={field.value || ""} />
                       </FormControl>
                       <FormDescription>
                         رابط صورة للإعلان، يفضل المقاس 16:9
@@ -371,7 +381,7 @@ export default function AdvertisementsPage() {
                     <FormItem>
                       <FormLabel>رابط الإعلان</FormLabel>
                       <FormControl>
-                        <Input placeholder="/specials/food" {...field} />
+                        <Input placeholder="/specials/food" {...field} value={field.value || ""} />
                       </FormControl>
                       <FormDescription>
                         الرابط الذي سينتقل إليه المستخدم عند النقر على الإعلان
@@ -390,7 +400,7 @@ export default function AdvertisementsPage() {
                     <FormItem>
                       <FormLabel>تاريخ البدء</FormLabel>
                       <FormControl>
-                        <Input type="date" {...field} />
+                        <Input type="date" {...field} value={field.value || ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -433,6 +443,7 @@ export default function AdvertisementsPage() {
                           min="1" 
                           max="10" 
                           {...field} 
+                          value={field.value || 5}
                           onChange={(e) => field.onChange(Number(e.target.value))}
                         />
                       </FormControl>
@@ -505,7 +516,7 @@ export default function AdvertisementsPage() {
                   <FormItem>
                     <FormLabel>العنوان</FormLabel>
                     <FormControl>
-                      <Input placeholder="عنوان الإعلان" {...field} />
+                      <Input placeholder="عنوان الإعلان" {...field} value={field.value || ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -534,7 +545,7 @@ export default function AdvertisementsPage() {
                     <FormItem>
                       <FormLabel>رابط الصورة</FormLabel>
                       <FormControl>
-                        <Input placeholder="https://example.com/image.jpg" {...field} />
+                        <Input placeholder="https://example.com/image.jpg" {...field} value={field.value || ""} />
                       </FormControl>
                       <FormDescription>
                         رابط صورة للإعلان
@@ -551,7 +562,7 @@ export default function AdvertisementsPage() {
                     <FormItem>
                       <FormLabel>رابط الإعلان</FormLabel>
                       <FormControl>
-                        <Input placeholder="/specials/food" {...field} />
+                        <Input placeholder="/specials/food" {...field} value={field.value || ""} />
                       </FormControl>
                       <FormDescription>
                         الرابط الذي سينتقل إليه المستخدم عند النقر على الإعلان
@@ -570,7 +581,7 @@ export default function AdvertisementsPage() {
                     <FormItem>
                       <FormLabel>تاريخ البدء</FormLabel>
                       <FormControl>
-                        <Input type="date" {...field} />
+                        <Input type="date" {...field} value={field.value || ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -613,6 +624,7 @@ export default function AdvertisementsPage() {
                           min="1" 
                           max="10" 
                           {...field} 
+                          value={field.value || 5}
                           onChange={(e) => field.onChange(Number(e.target.value))}
                         />
                       </FormControl>
@@ -756,15 +768,6 @@ export default function AdvertisementsPage() {
               </div>
             </div>
           )}
-          
-          <DialogFooter>
-            <Button 
-              type="button" 
-              onClick={() => setIsPreviewDialogOpen(false)}
-            >
-              إغلاق
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </AdminLayout>
