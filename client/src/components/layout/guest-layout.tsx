@@ -44,6 +44,7 @@ export default function GuestLayout({ children, showLiveStreamBanner = true }: G
     { name: i18n.t('series'), href: '/series' },
     { name: i18n.t('voting'), href: '/voting' },
     { name: i18n.t('liveStream'), href: '/live-stream' },
+    { name: 'اختبار مشغل الفيديو', href: '/video-test' },
   ];
 
   // Admin links to show if user is admin

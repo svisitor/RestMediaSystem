@@ -13,6 +13,7 @@ import Series from "./pages/guest/series";
 import Voting from "./pages/guest/voting";
 import LiveStream from "./pages/guest/live-stream";
 import MediaDetail from "./pages/guest/media-detail";
+import VideoPlayerTest from "./pages/guest/video-player-test";
 
 // Admin pages
 import Dashboard from "./pages/admin/dashboard";
@@ -56,6 +57,7 @@ function AppRoutes() {
       <Route path="/voting" component={Voting} />
       <Route path="/live-stream" component={LiveStream} />
       <Route path="/media/:id" component={MediaDetail} />
+      <Route path="/video-test" component={VideoPlayerTest} />
 
       {/* Admin Interface */}
       <Route path="/admin">
