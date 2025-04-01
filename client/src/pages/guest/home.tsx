@@ -33,21 +33,18 @@ export default function GuestHome() {
 
   return (
     <AppLayout>
-      {/* Hero Section with Advertisement Carousel */}
-      <div className="relative h-[70vh] overflow-hidden rounded-lg mb-6">
-        <div className="absolute inset-0 z-10">
-          <AdvertisementCarousel 
-            className="h-full" 
-            showControls={true} 
-            autoplay={true} 
-            interval={8000}
-          />
-        </div>
-        <div className="absolute inset-0 z-20 bg-gradient-to-b from-background/30 via-transparent to-background/80"></div>
+      {/* Hero Section with Advertisement Carousel - Optimized height */}
+      <div className="relative h-[50vh] overflow-hidden rounded-lg mb-4">
+        <AdvertisementCarousel 
+          className="h-full" 
+          showControls={true} 
+          autoplay={true} 
+          interval={8000}
+        />
       </div>
 
-      {/* Content Sections */}
-      <div className="px-4 md:px-8 py-8 telegram-slide-up">
+      {/* Content Sections - Reduced spacing */}
+      <div className="px-4 md:px-6 py-4 telegram-slide-up">
         
         {/* Movies Section - Horizontal Scrolling */}
         <HorizontalMediaList 
@@ -56,7 +53,7 @@ export default function GuestHome() {
           isLoading={loadingMovies}
           isError={errorMovies}
           onViewAll={() => navigate('/movies')}
-          className="mb-10 telegram-slide-up"
+          className="mb-6 telegram-slide-up"
         />
 
         {/* TV Series Section - Horizontal Scrolling */}
@@ -66,7 +63,7 @@ export default function GuestHome() {
           isLoading={loadingSeries}
           isError={errorSeries}
           onViewAll={() => navigate('/series')}
-          className="mb-10 telegram-slide-up"
+          className="mb-6 telegram-slide-up"
         />
       </div>
     </AppLayout>

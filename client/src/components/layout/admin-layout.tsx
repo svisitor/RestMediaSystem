@@ -42,13 +42,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       items: [
         { name: i18n.t('contentManagement'), href: '/admin/content', icon: <Film className="h-5 w-5 ml-3" /> },
         { name: i18n.t('advertisements'), href: '/admin/advertisements', icon: <MessageSquare className="h-5 w-5 ml-3" /> },
-      ] 
-    },
-    { 
-      category: i18n.t('liveStream'),
-      items: [
         { name: i18n.t('liveStreams'), href: '/admin/live-streams', icon: <Video className="h-5 w-5 ml-3" /> },
-        { name: i18n.t('broadcastManagement'), href: '/admin/broadcasts', icon: <Clock className="h-5 w-5 ml-3" /> },
       ] 
     },
     { 
