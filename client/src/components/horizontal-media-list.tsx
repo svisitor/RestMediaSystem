@@ -48,13 +48,23 @@ export default function HorizontalMediaList({
 
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: -300, behavior: 'smooth' });
+      const containerWidth = scrollContainerRef.current.clientWidth;
+      const scrollAmount = Math.max(containerWidth * 0.75, 400); // Scroll 75% of container width
+      scrollContainerRef.current.scrollBy({ 
+        left: -scrollAmount, 
+        behavior: 'smooth' 
+      });
     }
   };
 
   const scrollRight = () => {
     if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: 300, behavior: 'smooth' });
+      const containerWidth = scrollContainerRef.current.clientWidth;
+      const scrollAmount = Math.max(containerWidth * 0.75, 400); // Scroll 75% of container width
+      scrollContainerRef.current.scrollBy({ 
+        left: scrollAmount, 
+        behavior: 'smooth' 
+      });
     }
   };
 
@@ -116,12 +126,31 @@ export default function HorizontalMediaList({
           >
             {isLoading ? (
               // Loading skeleton
-              Array(8).fill(0).map((_, i) => (
-                <div key={i} className="min-w-[240px] animate-pulse bg-surface rounded-lg h-64 flex-shrink-0"></div>
+              Array(10).fill(0).map((_, i) => (
+                <div 
+                  key={i} 
+                  className="min-w-[180px] flex-shrink-0"
+                  style={{ animationDelay: `${i * 0.05}s` }}
+                >
+                  <div className="animate-pulse bg-surface rounded-lg overflow-hidden">
+                    <div className="h-48 bg-gray-800/50"></div>
+                    <div className="p-3">
+                      <div className="h-3 bg-gray-700 rounded mb-2"></div>
+                      <div className="h-2 bg-gray-700/60 rounded w-2/3"></div>
+                    </div>
+                  </div>
+                </div>
               ))
             ) : (
-              media?.map(item => (
-                <div key={item.id} className="min-w-[240px] flex-shrink-0">
+              media?.map((item, index) => (
+                <div
+                  key={item.id} 
+                  className="min-w-[180px] flex-shrink-0 transition-transform duration-500"
+                  style={{ 
+                    animationDelay: `${index * 0.05}s`,
+                    transform: `translateZ(0)` // Forces GPU acceleration
+                  }}
+                >
                   <MediaCard media={item} />
                 </div>
               ))

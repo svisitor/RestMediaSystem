@@ -4,7 +4,7 @@ import { Link } from "wouter";
 import { Advertisement } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, AlertCircle, Play, Download } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
@@ -135,24 +135,42 @@ export default function AdvertisementCarousel({
                 <Card className="overflow-hidden border-0 rounded-xl">
                   <CardContent className="p-0">
                     <Link to={ad.linkUrl || '#'}>
-                      <div className="w-full aspect-[16/9] relative overflow-hidden group">
+                      <div className="w-full aspect-[16/9] relative overflow-hidden group cursor-pointer">
                         <img
                           src={ad.imageUrl}
                           alt={ad.title}
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          loading="lazy"
                         />
                         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent pt-8 pb-4 px-4 text-white">
                           <h3 className="text-2xl font-bold mb-2">{ad.title}</h3>
                           {ad.description && (
                             <p className="text-sm mb-3 line-clamp-2">{ad.description}</p>
                           )}
-                          <Button 
-                            variant="secondary" 
-                            size="sm"
-                            className="mt-2"
-                          >
-                            عرض التفاصيل
-                          </Button>
+                          <div className="flex space-x-4 space-x-reverse">
+                            <span 
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                window.location.href = ad.linkUrl || '#';
+                              }}
+                              className="bg-secondary hover:bg-secondary/80 text-white rounded-md flex items-center transition-all duration-300 transform hover:scale-105 py-1 px-3 text-sm cursor-pointer"
+                            >
+                              <Play className="h-4 w-4 ml-2" />
+                              مشاهدة الآن
+                            </span>
+                            <span 
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                // Download functionality would go here
+                              }}
+                              className="bg-gray-800 hover:bg-gray-700 text-white rounded-md flex items-center transition-all duration-300 transform hover:scale-105 py-1 px-3 text-sm border border-gray-700 cursor-pointer"
+                            >
+                              <Download className="h-4 w-4 ml-2" />
+                              تحميل
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </Link>
